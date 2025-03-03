@@ -1,9 +1,12 @@
 package main
 
+package main
+
 import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/go-faker/faker/v4"
 )
@@ -17,23 +20,26 @@ type User struct {
 }
 
 func main() {
-	user := User{}
-	err := faker.FakeData(&user)
-	if err != nil {
-		fmt.Println("Error faker", err)
-		return
-	}
-	jsonData, err := json.MarshalIndent(user, "", "  ")
-	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
+	if len(os.Args) < 3 {
+		fmt.Println("Использование: go run main.go <количество> <файл>")
 		return
 	}
 
-	err = os.WriteFile("user.json", jsonData, 0644)
-	if err != nil {
-		fmt.Println("Error writing to file:", err)
+	count, err := strconv.Atoi(os.Args[1])
+	if err != nil || count <= 0 {
+		fmt.Println("Ошибка: введите корректное число пользователей")
 		return
 	}
 
-	fmt.Println("JSON data written to file successfully.")
+	filename := os.Args[2]
+	users := make([]User, count)
+
+	for i := 0; i < count; i++ {
+		_ = faker.FakeData(&users[i])
+	}
+
+	data, _ := json.MarshalIndent(users, "", "  ")
+	_ = os.WriteFile(filename, data, 0644)
+
+	fmt.Println("Файл", filename, "успешно создан с", count, "пользователями!")
 }
