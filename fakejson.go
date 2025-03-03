@@ -1,10 +1,9 @@
 package main
 
-package main
-
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -21,25 +20,29 @@ type User struct {
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Использование: go run main.go <количество> <файл>")
-		return
+		log.Fatalf("Использование: go run main.go <количество> <файл>")
 	}
 
 	count, err := strconv.Atoi(os.Args[1])
 	if err != nil || count <= 0 {
-		fmt.Println("Ошибка: введите корректное число пользователей")
-		return
+		log.Fatalf("Ошибка: введите корректное число пользователей")
 	}
 
 	filename := os.Args[2]
 	users := make([]User, count)
 
-	for i := 0; i < count; i++ {
-		_ = faker.FakeData(&users[i])
+	for range count {
+		err = faker.FakeData(&users)
+		if err != nil {
+			log.Fatalf("Проблема при факировании данных")
+		}
 	}
 
-	data, _ := json.MarshalIndent(users, "", "  ")
-	_ = os.WriteFile(filename, data, 0644)
+	data, _ := json.Marshal(users)
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil {
+		log.Fatalf("Ошибка записи файла")
+	}
 
-	fmt.Println("Файл", filename, "успешно создан с", count, "пользователями!")
+	fmt.Println("Файл", filename, "успешно создан c", count, `пользователями!`)
 }
